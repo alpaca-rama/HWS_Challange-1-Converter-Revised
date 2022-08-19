@@ -10,12 +10,19 @@ import SwiftUI
 struct ContentView: View {
     
     @State private var input = 100.0
-    @State private var inputUnit = UnitLength.meters
-    @State private var outputUnit = UnitLength.kilometers
-    
+    @State private var inputUnit: Dimension = UnitLength.meters
+    @State private var outputUnit: Dimension = UnitLength.kilometers
+    @State private var selectedUnit = 0
     @FocusState private var inputIsFocused: Bool
     
-    let units: [UnitLength] = [.centimeters, .meters, .kilometers, .inches, .feet, .yards, .miles]
+    let conversions = ["Distance", "Mass", "Temperature", "Time"]
+    
+    let unitTypes = [
+        [UnitLength.centimeters, UnitLength.meters, UnitLength.kilometers, UnitLength.inches, UnitLength.feet, UnitLength.yards, UnitLength.miles],
+        [UnitMass.grams, UnitMass.kilograms, UnitMass.pounds],
+        [UnitTemperature.celsius, UnitTemperature.fahrenheit, UnitTemperature.kelvin],
+        [UnitDuration.seconds, UnitDuration.minutes, UnitDuration.hours]
+    ]
     
     let formatter: MeasurementFormatter
     
@@ -37,14 +44,20 @@ struct ContentView: View {
                     Text("Amount to Convert")
                 }
                 
+                Picker("Conversion", selection: $selectedUnit) {
+                    ForEach(0..<conversions.count, id: \.self) {
+                        Text(conversions[$0])
+                    }
+                }
+                
                 Picker("Convert from", selection: $inputUnit) {
-                    ForEach(units, id:\.self) {
+                    ForEach(unitTypes[selectedUnit], id:\.self) {
                         Text(formatter.string(from: $0).capitalized)
                     }
                 }
                 
                 Picker("Convert to", selection: $outputUnit) {
-                    ForEach(units, id:\.self) {
+                    ForEach(unitTypes[selectedUnit], id:\.self) {
                         Text(formatter.string(from: $0).capitalized)
                     }
                 }
@@ -64,6 +77,11 @@ struct ContentView: View {
                         inputIsFocused = false
                     }
                 }
+            }
+            .onChange(of: selectedUnit) { newsSelection in
+                let units = unitTypes[newsSelection]
+                inputUnit = units[0]
+                outputUnit = units[1]
             }
         }
     }
